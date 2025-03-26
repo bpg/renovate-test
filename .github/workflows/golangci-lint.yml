@@ -1,0 +1,46 @@
+name: Linter
+
+on:
+  push:
+    tags:
+      - v*
+    branches:
+      - main
+  pull_request:
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  golangci-lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Filter paths
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        id: filter
+        with:
+          filters: |
+            go:
+              - '**/*.go'
+            linter:
+              - .github/workflows/golangci-lint.yml
+
+      - name: Setup Go
+        uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b # v5
+        if: ${{ steps.filter.outputs.go == 'true' || steps.filter.outputs.linter == 'true'}}
+        with:
+          go-version-file: "go.mod"
+          cache-dependency-path: |
+            go.sum
+
+      - name: Lint code
+        if: ${{ steps.filter.outputs.go == 'true' || steps.filter.outputs.linter == 'true'}}
+        uses: golangci/golangci-lint-action@55c2c1448f86e01eaae002a5a3a9624417608d84 # v6
+        with: 
+          version: v1.64.8 # renovate: depName=golangci/golangci-lint datasource=github-releases
+          args: -v --timeout=10m

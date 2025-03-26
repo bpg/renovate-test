@@ -1,0 +1,36 @@
+{
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    'github>bpg/renovate-config',
+    'github>bpg/renovate-config:automerge-github-actions',
+    ':semanticCommitTypeAll(chore)',
+  ],
+  postUpdateOptions: [
+    'gomodTidy',
+    'gomodUpdateImportPaths',
+  ],
+  ignorePaths: [
+    'howtos/**',
+  ],
+  rebaseWhen: 'behind-base-branch',
+  packageRules: [
+    {
+      semanticCommitScope: 'deps',
+      matchPackageNames: [
+        '*',
+      ],
+    },
+    {
+      matchManagers: [
+        'github-actions',
+      ],
+      semanticCommitScope: 'ci',
+    },
+    {
+      matchUpdateTypes: [
+        'major',
+      ],
+      commitMessagePrefix: '{{semanticCommitType}}({{semanticCommitScope}}):',
+    },
+  ],
+}
